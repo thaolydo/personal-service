@@ -1,5 +1,5 @@
 import { DynamoDB } from "aws-sdk";
-import { Converter, DeleteItemInput, PutItemInput, ScanInput } from "aws-sdk/clients/dynamodb";
+import { Converter, DeleteItemInput, GetItemInput, PutItemInput, ScanInput } from "aws-sdk/clients/dynamodb";
 import { TravelPost } from "../model/travel-post.model";
 
 export class TravelPostDao {
@@ -36,10 +36,21 @@ export class TravelPostDao {
         return Promise.resolve(res.Items?.map(item => Converter.unmarshall(item)));
     }
 
+    async getTravelPost(pid: string) {
+        console.log('Getting travel post for pid', pid);
+        const params: GetItemInput = {
+            Key: Converter.marshall({ pid }),
+            TableName: this.TABLE_NAME
+        };
+
+        const res = await this.client.getItem(params).promise();
+        return Promise.resolve(Converter.unmarshall(res.Item));
+    }
+
     deleteTravelPost(pid: string) {
         console.log('Deleting travel post for pid', pid);
         const params: DeleteItemInput = {
-            Key: Converter.marshall({pid}),
+            Key: Converter.marshall({ pid }),
             ConditionExpression: 'attribute_exists(pid)',
             TableName: this.TABLE_NAME
         }

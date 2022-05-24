@@ -6,14 +6,21 @@ const cookingPostDao = new CookingPostDao();
 export const handler = async (handlerInput: any) => {
     console.log("GetCookingPosts lambda is invoked with handlerInput", handlerInput);
 
-    const cookingPosts = await cookingPostDao.getCookingPosts();
+    const gettingSinglePost = handlerInput.routeKey == 'GET /cooking/{pid}';
+    let res;
+    if (gettingSinglePost) {
+        const pid = handlerInput.pathParameters.pid;
+        const cookingPost = await cookingPostDao.getCookingPost(pid);
+        res = { cookingPost };
+    } else {
+        const cookingPosts = await cookingPostDao.getCookingPosts();
+        res = { cookingPosts };
+    }
 
     // Build response
     const response = {
         statusCode: 200,
-        body: JSON.stringify({
-            cookingPosts,
-        }),
+        body: JSON.stringify(res),
     };
     return response;
 }

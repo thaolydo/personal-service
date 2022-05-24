@@ -1,5 +1,5 @@
 import { DynamoDB } from "aws-sdk";
-import { Converter, DeleteItemInput, PutItemInput, ScanInput } from "aws-sdk/clients/dynamodb";
+import { Converter, DeleteItemInput, GetItemInput, PutItemInput, ScanInput } from "aws-sdk/clients/dynamodb";
 import { CookingPost } from "../model/cooking-post.model";
 
 export class CookingPostDao {
@@ -36,10 +36,21 @@ export class CookingPostDao {
         return Promise.resolve(res.Items?.map(item => Converter.unmarshall(item)));
     }
 
+    async getCookingPost(pid: string) {
+        console.log('Getting cooking post for pid', pid);
+        const params: GetItemInput = {
+            Key: Converter.marshall({ pid }),
+            TableName: this.TABLE_NAME
+        };
+
+        const res = await this.client.getItem(params).promise();
+        return Promise.resolve(Converter.unmarshall(res.Item));
+    }
+
     deleteCookingPost(pid: string) {
         console.log('Deleting cooking post for pid', pid);
         const params: DeleteItemInput = {
-            Key: Converter.marshall({pid}),
+            Key: Converter.marshall({ pid }),
             ConditionExpression: 'attribute_exists(pid)',
             TableName: this.TABLE_NAME
         }
