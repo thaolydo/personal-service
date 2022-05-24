@@ -23,7 +23,7 @@ export const handler = async (handlerInput: any) => {
 
     // Build response
     const response = {
-        statusCode: 404,
+        statusCode: 200,
         body: JSON.stringify({
             message: resMessage,
         }),
