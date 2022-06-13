@@ -13,7 +13,8 @@ export const handler = async (handlerInput: any) => {
     const contentType = queryParams.contentType;
     const filePath = queryParams.postType;
 
-    const res = await s3Accessor.getSignedUrl(filePath, fileName, contentType);
+    // const res = await s3Accessor.getSignedUrl(filePath, fileName, contentType);
+    const res = await s3Accessor.getSignedPostUrl(filePath, fileName, contentType);
 
     return {
         statusCode: 200,
