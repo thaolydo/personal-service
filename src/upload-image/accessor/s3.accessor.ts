@@ -11,7 +11,8 @@ export class S3Accessor {
         this.client = new S3();
     }
 
-    async uploadFile(filePath: string, fileName: string, imageType: string, data: Buffer) {
+    // Deprecating in favor of getSignedUrl flow
+    uploadFile(filePath: string, fileName: string, imageType: string, data: Buffer) {
         console.log(`Uploading file with filePath '${filePath}' fileName '${fileName}', imageType '${imageType}'`);
         const params: PutObjectRequest = {
             Bucket: S3Accessor.BUCKET_NAME,
@@ -22,5 +23,23 @@ export class S3Accessor {
             ContentType: `image/${imageType}`
         };
         return this.client.upload(params).promise();
+    }
+
+    // https://aws.amazon.com/blogs/compute/uploading-to-amazon-s3-directly-from-a-web-or-mobile-application
+    async getSignedUrl(filePath: string, fileName: string, contentType: string) {
+        console.log(`Getting signed url with filePath '${filePath}' fileName '${fileName}', contentType '${contentType}'`);
+        const key = `${filePath}/${fileName}`;
+        const params: any = {
+            Bucket: S3Accessor.BUCKET_NAME,
+            Key: key,
+            Expires: 30, // in seconds
+            ContentType: contentType,
+            ACL: 'public-read',
+        };
+        const signedUrl = await this.client.getSignedUrlPromise('putObject', params);
+        return {
+            key,
+            signedUrl
+        };
     }
 }
