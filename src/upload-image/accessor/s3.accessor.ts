@@ -1,5 +1,4 @@
 import { S3 } from "aws-sdk";
-import { PutObjectRequest } from "aws-sdk/clients/s3";
 
 export class S3Accessor {
 
@@ -9,20 +8,6 @@ export class S3Accessor {
 
     constructor() {
         this.client = new S3();
-    }
-
-    // Deprecating in favor of getSignedUrl flow
-    uploadFile(filePath: string, fileName: string, imageType: string, data: Buffer) {
-        console.log(`Uploading file with filePath '${filePath}' fileName '${fileName}', imageType '${imageType}'`);
-        const params: PutObjectRequest = {
-            Bucket: S3Accessor.BUCKET_NAME,
-            Key: `${filePath}/${fileName}`,
-            Body: data,
-            ACL: 'public-read',
-            ContentEncoding: 'base64',
-            ContentType: `image/${imageType}`
-        };
-        return this.client.upload(params).promise();
     }
 
     // https://aws.amazon.com/blogs/compute/uploading-to-amazon-s3-directly-from-a-web-or-mobile-application
