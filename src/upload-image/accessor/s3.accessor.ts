@@ -5,7 +5,7 @@ export class S3Accessor {
 
     private client: S3;
 
-    private BUCKET_NAME = 'peronsal-website-storage';
+    private BUCKET_NAME = 'personal-website-storage';
     private THUMBNAIL_BUCKET_NAME = 'personal-website-storage-thumbnails';
 
     constructor() {
