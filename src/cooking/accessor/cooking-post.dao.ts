@@ -44,7 +44,7 @@ export class CookingPostDao {
         };
 
         const res = await this.client.getItem(params).promise();
-        return Promise.resolve(Converter.unmarshall(res.Item));
+        return Promise.resolve(Converter.unmarshall(res.Item) as CookingPost);
     }
 
     deleteCookingPost(pid: string) {

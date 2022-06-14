@@ -1,7 +1,9 @@
 import 'source-map-support/register';
+import { S3Accessor } from '../../upload-image/accessor/s3.accessor';
 import { CookingPostDao } from '../accessor/cooking-post.dao';
 
 const cookingPostDao = new CookingPostDao();
+const s3Accessor = new S3Accessor();
 
 export const handler = async (handlerInput: any) => {
     console.log("DeleteCookingPost lambda is invoked with handlerInput", handlerInput);
@@ -12,8 +14,25 @@ export const handler = async (handlerInput: any) => {
 
     let resMessage = 'success';
 
+    const promises = [] as any[];
+
+    // Remove the images in S3
+    const cookingPost = await cookingPostDao.getCookingPost(pid);
+    const key = `cooking/${pid}.${cookingPost.imageUrl.split('.').pop()}`;
+    promises.push(s3Accessor.deleteObject(key));
+
+    // Remove from DDB
+    promises.push(cookingPostDao.deleteCookingPost(pid));
+
     try {
-        await cookingPostDao.deleteCookingPost(pid);
+        const res = await Promise.allSettled(promises);
+        for (const result of res) {
+            if (result.status != 'rejected') {
+                continue;
+            }
+            const reason = (result.reason as Object).toString();
+            console.error('rejected reason: ', reason);
+        }
     } catch (e) {
         console.error(e);
         if ((e as any).code === 'ConditionalCheckFailedException') {

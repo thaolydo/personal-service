@@ -1,5 +1,5 @@
 import { S3 } from "aws-sdk";
-import { PresignedPost, PutObjectRequest } from "aws-sdk/clients/s3";
+import { DeleteObjectRequest, DeleteObjectsRequest, PresignedPost, PutObjectRequest } from "aws-sdk/clients/s3";
 
 export class S3Accessor {
 
@@ -80,5 +80,23 @@ export class S3Accessor {
             ACL: 'public-read'
         };
         return this.client.putObject(params).promise();
+    }
+
+    async deleteObject(key: string) {
+        console.log(`Deleting objects with key ${key}`);
+
+        // Delete in the storage bucket
+        const params: DeleteObjectRequest = {
+            Bucket: this.BUCKET_NAME,
+            Key: key
+        };
+        await this.client.deleteObject(params).promise();
+
+        // Delete in the thumbnail bucket
+        const params2: DeleteObjectRequest = {
+            Bucket: this.THUMBNAIL_BUCKET_NAME,
+            Key: key
+        };
+        await this.client.deleteObject(params2).promise();
     }
 }
