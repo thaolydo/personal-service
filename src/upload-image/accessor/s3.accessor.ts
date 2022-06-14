@@ -1,11 +1,12 @@
 import { S3 } from "aws-sdk";
-import { PresignedPost } from "aws-sdk/clients/s3";
+import { PresignedPost, PutObjectRequest } from "aws-sdk/clients/s3";
 
 export class S3Accessor {
 
     private client: S3;
 
-    private static readonly BUCKET_NAME = 'peronsal-website-storage';
+    private BUCKET_NAME = 'peronsal-website-storage';
+    private THUMBNAIL_BUCKET_NAME = 'personal-website-storage-thumbnails';
 
     constructor() {
         this.client = new S3();
@@ -17,7 +18,7 @@ export class S3Accessor {
         console.log(`Getting signed url with filePath '${filePath}' fileName '${fileName}', contentType '${contentType}'`);
         const key = `${filePath}/${fileName}`;
         const params: any = {
-            Bucket: S3Accessor.BUCKET_NAME,
+            Bucket: this.BUCKET_NAME,
             Key: key,
             Expires: 30, // in seconds
             ContentType: contentType,
@@ -35,7 +36,7 @@ export class S3Accessor {
         console.log(`Getting signed post url with filePath '${filePath}' fileName '${fileName}', contentType '${contentType}'`);
         const key = `${filePath}/${fileName}`;
         const params: PresignedPost.Params = {
-            Bucket: S3Accessor.BUCKET_NAME,
+            Bucket: this.BUCKET_NAME,
             Fields: {
                 key,
                 "Content-Type": contentType
@@ -57,5 +58,27 @@ export class S3Accessor {
             });
 
         });
+    }
+
+    // https://docs.aws.amazon.com/lambda/latest/dg/with-s3-tutorial.html#with-s3-tutorial-configure-event-source
+    getObject(key: string) {
+        console.log(`Getting object with key ${key}`);
+        return this.client.getObject({
+            Bucket: this.BUCKET_NAME,
+            Key: key
+        }).promise();
+    }
+
+    // https://docs.aws.amazon.com/lambda/latest/dg/with-s3-tutorial.html#with-s3-tutorial-configure-event-source
+    putObject(key: string, buffer: Buffer) {
+        console.log(`Creating object with key ${key}`);
+        const params: PutObjectRequest = {
+            Bucket: this.THUMBNAIL_BUCKET_NAME,
+            Key: key,
+            Body: buffer,
+            ContentType: "image",
+            ACL: 'public-read'
+        };
+        return this.client.putObject(params).promise();
     }
 }

@@ -20,18 +20,30 @@ lambdaName="$(echo "$handlerFileName" | awk -F"-" '{for(i=1;i<=NF;i++){$i=touppe
 echo "lambda name = $lambdaName"
 
 # Clean up
-rm -rf "$zipFile"
+rm -rf dist
+# rm -rf "$zipFile"
 
 # Find file name
 filePath=$(find src -name "$handlerFileName.handler.ts")
 
 # Build the handler to index.js
-./node_modules/esbuild/bin/esbuild --bundle "$filePath" --outfile="$outFile" --platform=node --sourcemap
+npx esbuild --bundle "$filePath" --outfile="$outFile" --platform=node --sourcemap --external:sharp
 
 # Zip file for uploading to lambda
 zip -j "$zipFile" "$outFile" "dist/index.js.map"
 
+# Zipping extra dependencies for CreateThumbnail lambda only
+if [ "$lambdaName" == "CreateThumbnail" ]; then
+    echo 'Adding node_modules/sharp to the zip'
+    cd dist
+    mkdir node_modules
+    cp -r ../../sharp-only/node_modules/* ./node_modules
+    zip -ur "../$zipFile" "node_modules"
+    cd -
+fi
+
 # Upload the zip to lambda
+echo "Uploading the zip file to the lambda"
 aws lambda update-function-code \
     --function-name "$lambdaName" \
     --zip-file "fileb://$zipFile"
