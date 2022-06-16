@@ -5,6 +5,8 @@ import { CookingPostDao } from '../accessor/cooking-post.dao';
 const cookingPostDao = new CookingPostDao();
 const s3Accessor = new S3Accessor();
 
+const BLOCK_LIST_PIDS = new Set(['crawfish-', 'bb', 'ceviche', 'hi', 'wonton']);
+
 export const handler = async (handlerInput: any) => {
     console.log("DeleteCookingPost lambda is invoked with handlerInput", handlerInput);
 
@@ -15,6 +17,16 @@ export const handler = async (handlerInput: any) => {
     let resMessage = 'success';
 
     const promises = [] as any[];
+
+    // Skip deleting initial pics
+    if (BLOCK_LIST_PIDS.has(pid)) {
+        return {
+            statusCode: 403,
+            body: JSON.stringify({
+                message: 'Unable to delete this post',
+            }),
+        }
+    }
 
     // Remove the images in S3
     const cookingPost = await cookingPostDao.getCookingPost(pid);

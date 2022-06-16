@@ -5,6 +5,8 @@ import { TravelPostDao } from '../accessor/travel-post.dao';
 const travelPostDao = new TravelPostDao();
 const s3Accessor = new S3Accessor();
 
+const BLOCK_LIST_PIDS = new Set(["amazon’s-sphere", 'city-view', 'quinault-national-park-', 'fall-color-lake', 'capming']);
+
 export const handler = async (handlerInput: any) => {
     console.log("DeleteTravelPost lambda is invoked with handlerInput", handlerInput);
 
@@ -15,6 +17,16 @@ export const handler = async (handlerInput: any) => {
     let resMessage = 'success';
 
     const promises = [] as any[];
+
+    // Skip deleting initial pics
+    if (BLOCK_LIST_PIDS.has(pid)) {
+        return {
+            statusCode: 403,
+            body: JSON.stringify({
+                message: 'Unable to delete this post',
+            }),
+        }
+    }
 
     // Remove the images in S3
     const travelPost = await travelPostDao.getTravelPost(pid);
