@@ -7,12 +7,15 @@ export class SmsAccessor {
     private client: SNS;
 
     constructor() {
+        // this.client = new SNS();
     }
 
     async init() {
         if (this.client) {
             return;
         }
+
+        console.log('Initializing sns client');
 
         const sts = new STS();
         const assumeRoleRequest: AssumeRoleRequest = {
@@ -34,6 +37,7 @@ export class SmsAccessor {
     }
 
     sendSMS(phone: string, subject: string, message: string): Promise<PublishResponse> {
+        console.log(`Sending SMS to phone '${phone} with subject '${subject}'`);
         const params: PublishInput = {
             Subject: subject,
             Message: message,

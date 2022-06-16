@@ -5,6 +5,8 @@ import { SmsAccessor } from "../accessor/sms.accessor";
 
 const smsAccessor = new SmsAccessor();
 
+// This lambda is not in used currently due to SMS cost too high
+// Alarms are notified to emails instead.
 export const handler = async (handlerInput: any) => {
     console.log("PersonalServiceAlarm lambda is invoked with handlerInput", JSON.stringify(handlerInput));
     const records: SNSEventRecord[] = handlerInput.Records;
