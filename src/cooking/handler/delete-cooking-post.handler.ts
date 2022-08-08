@@ -30,8 +30,10 @@ export const handler = async (handlerInput: any) => {
 
     // Remove the images in S3
     const cookingPost = await cookingPostDao.getCookingPost(pid);
-    const key = `cooking/${pid}.${cookingPost.imageUrl.split('.').pop()}`;
-    promises.push(s3Accessor.deleteObject(key));
+    if (cookingPost.imageUrl) {
+        const key = `cooking/${pid}.${cookingPost.imageUrl.split('.').pop()}`;
+        promises.push(s3Accessor.deleteObject(key));
+    }
 
     // Remove from DDB
     promises.push(cookingPostDao.deleteCookingPost(pid));

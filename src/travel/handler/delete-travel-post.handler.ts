@@ -30,8 +30,10 @@ export const handler = async (handlerInput: any) => {
 
     // Remove the images in S3
     const travelPost = await travelPostDao.getTravelPost(pid);
-    const key = `travel/${pid}.${travelPost.imageUrl.split('.').pop()}`;
-    promises.push(s3Accessor.deleteObject(key));
+    if (travelPost.imageUrl) {
+        const key = `travel/${pid}.${travelPost.imageUrl.split('.').pop()}`;
+        promises.push(s3Accessor.deleteObject(key));
+    }
 
     // Remove from DDB
     promises.push(travelPostDao.deleteTravelPost(pid));
