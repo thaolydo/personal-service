@@ -30,7 +30,7 @@ export const handler = async (handlerInput: any) => {
     const srcImage = await s3Accessor.getObject(key);
 
     // set thumbnail width. Resize will set the height automatically to maintain aspect ratio.
-    const width = parseInt(process.env.THUMBNAIL_WIDTH);
+    const width = parseInt(process.env.THUMBNAIL_WIDTH!);
 
     // Use the sharp module to resize the image and save in a buffer.
     const buffer = await sharp(srcImage.Body as Buffer).resize(width).toBuffer() as Buffer;

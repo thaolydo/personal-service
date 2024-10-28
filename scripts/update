@@ -14,6 +14,7 @@ fi
 
 handlerFileName=$1
 
+profile="ly-website"
 outFile="dist/index.js"
 zipFile="dist/lambda.zip"
 lambdaName="$(echo "$handlerFileName" | awk -F"-" '{for(i=1;i<=NF;i++){$i=toupper(substr($i,1,1)) substr($i,2)}} 1' OFS="")"
@@ -46,4 +47,5 @@ fi
 echo "Uploading the zip file to the lambda"
 aws lambda update-function-code \
     --function-name "$lambdaName" \
-    --zip-file "fileb://$zipFile"
+    --profile=$profile \
+    --zip-file "fileb://$zipFile" | cat

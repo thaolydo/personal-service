@@ -1,5 +1,5 @@
 import { S3 } from "aws-sdk";
-import { DeleteObjectRequest, DeleteObjectsRequest, PresignedPost, PutObjectRequest } from "aws-sdk/clients/s3";
+import { DeleteObjectRequest, DeleteObjectsRequest, ListObjectsV2Output, ListObjectsV2Request, PresignedPost, PutObjectRequest } from "aws-sdk/clients/s3";
 
 export class S3Accessor {
 
@@ -32,17 +32,17 @@ export class S3Accessor {
     }
 
     // https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/modules/_aws_sdk_s3_presigned_post.html
-    async getSignedPostUrl(filePath: string, fileName: string, contentType: string): Promise<any> {
-        console.log(`Getting signed post url with filePath '${filePath}' fileName '${fileName}', contentType '${contentType}'`);
+    async getSignedPostUrl(filePath: string, fileName: string, customFields: any): Promise<any> {
+        console.log(`Getting signed post url with filePath '${filePath}' fileName '${fileName}', fields '${JSON.stringify(customFields)}'`);
         const key = `${filePath}/${fileName}`;
         const params: PresignedPost.Params = {
             Bucket: this.BUCKET_NAME,
             Fields: {
                 key,
-                "Content-Type": contentType
+                ...customFields,
             },
             Conditions: [
-                ['content-length-range', 0, 10_000_000], // 10MB
+                ['content-length-range', 0, 5_000_000_000], // 5GB
                 { acl: 'public-read' },
             ],
             Expires: 30, // in seconds
@@ -98,5 +98,14 @@ export class S3Accessor {
             Key: key
         };
         await this.client.deleteObject(params2).promise();
+    }
+
+    async getWeddingUrls(): Promise<ListObjectsV2Output> {
+        console.log('getWeddingUrls');
+        const params: ListObjectsV2Request = {
+            Bucket: this.BUCKET_NAME,
+            Prefix: 'wedding',
+        };
+        return await this.client.listObjectsV2(params).promise();
     }
 }
